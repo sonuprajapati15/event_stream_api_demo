@@ -74,7 +74,9 @@ def generate_flight(i):
         "rating": round(random.uniform(3.0, 5.0), 1),
         "reviewsCount": random.randint(10, 1000),
         "ecoFriendly": random.choice(["Yes", "No"]),
-        "lastUpdated": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        "lastUpdated": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        "vendor_name": 'Sabre',
+        "vendor_logo": 'https://download.logo.wine/logo/Sabre_Corporation/Sabre_Corporation-Logo.wine.png'
     }
 
 @app.route('/vendor2/api/flights', methods=['GET'])
@@ -85,7 +87,8 @@ def get_flights():
 @app.route('/vendor2/api/flights/paginated', methods=['GET'])
 def get_flights_paginated():
     page = int(request.args.get('page', 1))
-    per_page = 30
+    per_page = int(request.args.get('size', 10))
+
     start = (page - 1) * per_page
     end = start + per_page
 
@@ -95,7 +98,7 @@ def get_flights_paginated():
     except (FileNotFoundError, json.JSONDecodeError) as e:
         return jsonify({"error": str(e)}), 500
 
-    sleep(3)
+    sleep(5)
     return jsonify({
         "page": page,
         "perPage": per_page,
@@ -104,4 +107,4 @@ def get_flights_paginated():
     })
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8080)
+    app.run(debug=True, port=8000)

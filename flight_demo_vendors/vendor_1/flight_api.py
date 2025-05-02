@@ -1,11 +1,16 @@
 from flask import Flask, jsonify, request
 import random
 import json
+from time import sleep
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
-airlines = [{"name":"IndiGo", "logo":""}, {"name":"Air India","logo":""}, {"name":"SpiceJet", "logo":""}, {"name":"Vistara", "logo":""}, {"name":"Go First", "logo":""}, {"name":"Akasa Air", "logo":""}]
+airlines = [{"name":"IndiGo", "logo":"https://www.liblogo.com/img-logo/in7716i6b7-indigo-logo-indigo-is-hiring-for-trainee-qa-amp-ts-apply-now.png"},
+            {"name":"Air India","logo":"https://tse1.mm.bing.net/th/id/OIP.VF8rQObGF-vhG_BQLL0zmgHaEo?rs=1&pid=ImgDetMain"},
+            {"name":"SpiceJet", "logo":"https://tse3.mm.bing.net/th/id/OIP.2FAwuoQcqTrxpgdMyQrMmgAAAA?rs=1&pid=ImgDetMain"},
+            {"name":"Vistara", "logo":"https://tse4.mm.bing.net/th/id/OIP.1AJghOmsWxb_Z2FklliYgAHaE8?rs=1&pid=ImgDetMain"},
+            {"name":"Go First", "logo":"https://www.odishaage.com/wp-content/uploads/2021/08/GO-FIRST.png"}, {"name":"Akasa Air", "logo":"https://tse1.mm.bing.net/th/id/OIP.racldovE1XyYS-S_4FP3QQHaBQ?rs=1&pid=ImgDetMain"}]
 seat_types = ["Economy", "Premium Economy", "Business", "First Class"]
 cabin_classes = ["Standard", "Premium", "Deluxe", "Executive"]
 flight_types = ["Non-Stop", "One-Stop", "Two-Stop"]
@@ -72,7 +77,9 @@ def generate_flight(i):
         "rating": round(random.uniform(3.0, 5.0), 1),
         "reviewsCount": random.randint(10, 1000),
         "ecoFriendly": random.choice(["Yes", "No"]),
-        "lastUpdated": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        "lastUpdated": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        "vendor_name": 'Amadeus',
+        "vendor_logo": 'https://tse3.mm.bing.net/th/id/OIP.zMXaa5KC0DWwQVo4FxgragHaBL?rs=1&pid=ImgDetMain'
     }
 
 @app.route('/vendor1/api/flights', methods=['GET'])
@@ -83,16 +90,14 @@ def get_flights():
 @app.route('/vendor1/api/flights/paginated', methods=['GET'])
 def get_flights_paginated():
     page = int(request.args.get('page', 1))
-    per_page = 30
+    per_page = int(request.args.get('size', 10))
     start = (page - 1) * per_page
     end = start + per_page
-
     try:
         with open("all_flights_data.json", "r") as f:
             all_flights = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError) as e:
         return jsonify({"error": str(e)}), 500
-
     return jsonify({
         "page": page,
         "perPage": per_page,
@@ -101,4 +106,4 @@ def get_flights_paginated():
     })
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8080)
+    app.run(debug=True, port=5000)
