@@ -7,7 +7,11 @@ from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
-airlines = [{"name":"IndiGo", "logo":""}, {"name":"Air India","logo":""}, {"name":"SpiceJet", "logo":""}, {"name":"Vistara", "logo":""}, {"name":"Go First", "logo":""}, {"name":"Akasa Air", "logo":""}]
+airlines = [{"name":"IndiGo", "logo":"https://www.liblogo.com/img-logo/in7716i6b7-indigo-logo-indigo-is-hiring-for-trainee-qa-amp-ts-apply-now.png"},
+            {"name":"Air India","logo":"https://tse1.mm.bing.net/th/id/OIP.VF8rQObGF-vhG_BQLL0zmgHaEo?rs=1&pid=ImgDetMain"},
+            {"name":"SpiceJet", "logo":"https://tse3.mm.bing.net/th/id/OIP.2FAwuoQcqTrxpgdMyQrMmgAAAA?rs=1&pid=ImgDetMain"},
+            {"name":"Vistara", "logo":"https://tse4.mm.bing.net/th/id/OIP.1AJghOmsWxb_Z2FklliYgAHaE8?rs=1&pid=ImgDetMain"},
+            {"name":"Go First", "logo":"https://www.odishaage.com/wp-content/uploads/2021/08/GO-FIRST.png"}, {"name":"Akasa Air", "logo":"https://tse1.mm.bing.net/th/id/OIP.racldovE1XyYS-S_4FP3QQHaBQ?rs=1&pid=ImgDetMain"}]
 seat_types = ["Economy", "Premium Economy", "Business", "First Class"]
 cabin_classes = ["Standard", "Premium", "Deluxe", "Executive"]
 flight_types = ["Non-Stop", "One-Stop", "Two-Stop"]
@@ -81,7 +85,7 @@ def generate_flight(i):
 
 @app.route('/vendor2/api/flights', methods=['GET'])
 def get_flights():
-    flights = [generate_flight(i) for i in range(1000)]
+    flights = [generate_flight(i) for i in range(40)]
     return jsonify(flights)
 
 @app.route('/vendor2/api/flights/paginated', methods=['GET'])
@@ -98,7 +102,8 @@ def get_flights_paginated():
     except (FileNotFoundError, json.JSONDecodeError) as e:
         return jsonify({"error": str(e)}), 500
 
-    sleep(5)
+    sleep(1) # adding delay of 1 sec
+
     return jsonify({
         "page": page,
         "perPage": per_page,

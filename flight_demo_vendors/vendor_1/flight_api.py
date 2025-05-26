@@ -35,7 +35,7 @@ def generate_flight(i):
     layover_count = random.choice([0, 1, 2])
     layovers = random.sample(layover_cities, layover_count)
     return {
-        "flightId": f"FLIGHT-{1000 + i}",
+        "flightId": f"FLIGHT-{4103 + i}",
         "flightNumber": f"{random.choice(airlines)['name'][:2].upper()}-{random.randint(100, 9999)}",
         "airline": random.choice(airlines),
         "from": "Delhi",
@@ -84,7 +84,7 @@ def generate_flight(i):
 
 @app.route('/vendor1/api/flights', methods=['GET'])
 def get_flights():
-    flights = [generate_flight(i) for i in range(1000)]
+    flights = [generate_flight(i) for i in range(50)]
     return jsonify(flights)
 
 @app.route('/vendor1/api/flights/paginated', methods=['GET'])
@@ -93,6 +93,7 @@ def get_flights_paginated():
     per_page = int(request.args.get('size', 10))
     start = (page - 1) * per_page
     end = start + per_page
+    sleep(2) # adding delay of 2 sec
     try:
         with open("all_flights_data.json", "r") as f:
             all_flights = json.load(f)
