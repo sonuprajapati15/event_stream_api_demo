@@ -1,9 +1,10 @@
 import json
 from time import sleep
-
 from flask import Flask, jsonify, request
 import random
 from datetime import datetime, timedelta
+from flight_demo_vendors.mongo_client import get_all_bookings, get_flights_from_mongo
+
 
 app = Flask(__name__)
 
@@ -26,6 +27,21 @@ fare_classes = ["Y", "B", "M", "H", "Q", "K"]
 gate_numbers = [f"A{n}" for n in range(1, 21)]
 layover_cities = ["Hyderabad", "Ahmedabad", "Chennai", "Bengaluru", "Pune", "Kolkata"]
 
+def get_random_international_route_with_layover():
+    layover_cities = ["Hyderabad", "Ahmedabad", "Chennai", "Bengaluru", "Pune", "Kolkata"]
+    from_cities = ["Delhi", "dubai", "london", "new york", "germany", "canada", "singapore", "france", "switzerland", "australia"]
+    to_cities = ["Mumbai", "Bengaluru", "Chennai", "Kolkata", "Hyderabad", "Pune", "Ahmedabad", "Jaipur", "Goa", "Cochin"]
+
+    valid_from = [city for city in from_cities if city not in layover_cities]
+    valid_to = [city for city in to_cities if city not in layover_cities]
+
+    from_city = random.choice(valid_from)
+    to_city = random.choice([city for city in valid_to if city != from_city])
+
+    possible_layovers = [city for city in layover_cities if city != from_city and city != to_city]
+    layover = random.choice(possible_layovers) if possible_layovers and random.choice([True, False]) else None
+    return from_city, to_city, layover
+
 def random_time():
     start = datetime.strptime('00:00', '%H:%M')
     end = datetime.strptime('23:59', '%H:%M')
@@ -33,8 +49,7 @@ def random_time():
     return (start + timedelta(minutes=rand_minutes)).strftime('%H:%M')
 
 def generate_flight(i):
-    layover_count = random.choice([0, 1, 2])
-    layovers = random.sample(layover_cities, layover_count)
+    from_city, to_city, layover = get_random_international_route_with_layover()
     return {
         "flightId": f"FLIGHT-{1000 + i}",
         "flightNumber": f"{random.choice(airlines)['name'][:2].upper()}-{random.randint(100, 9999)}",
@@ -61,8 +76,8 @@ def generate_flight(i):
         "terminal": f"T{random.randint(1, 3)}",
         "boardingTime": random_time(),
         "checkInCounter": f"C{random.randint(1, 20)}",
-        "layovers": layovers,
-        "totalStops": len(layovers),
+        "layovers": [layover],
+        "totalStops": 1,
         "onTimePerformance": f"{random.randint(80, 99)}%",
         "seatPitch": f"{random.randint(28, 34)} inches",
         "seatWidth": f"{random.randint(17, 21)} inches",
@@ -110,6 +125,38 @@ def get_flights_paginated():
         "totalFlights": len(all_flights),
         "flights": all_flights[start:end]
     })
+
+
+@app.route('/vendor2/api/flights/search', methods=['GET'])
+def search_flights():
+    source = request.args.get('from')
+    destination = request.args.get('to')
+    page = int(request.args.get('page', 1))
+    per_page = int(request.args.get('size', 10))
+
+    if not source or not destination:
+        return jsonify({"error": "Missing 'from' or 'to' parameter"}), 400
+
+    flights = get_flights_from_mongo(source, destination, 'Sabre')
+    sorted_flights = sorted(flights, key=lambda x: x['price'])
+    start = (page - 1) * per_page
+    end = start + per_page
+    paginated_flights = sorted_flights[start:end]
+
+    return jsonify({
+        "page": page,
+        "perPage": per_page,
+        "totalFlights": len(sorted_flights),
+        "flights": paginated_flights
+    })
+
+@app.route('/vendor2/api/bookings', methods=['GET'])
+def get_bookings_by_route():
+    userid = request.args.get('userId')
+    if not userid:
+        return jsonify({"error": "Missing userid parameter"}), 400
+    return jsonify(get_all_bookings(userid, 'Sabre'))
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000)

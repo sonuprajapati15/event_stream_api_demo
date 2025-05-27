@@ -3,6 +3,7 @@ import random
 import json
 from time import sleep
 from datetime import datetime, timedelta
+from flight_demo_vendors.mongo_client import get_all_bookings, get_flights_from_mongo, search_cities_by_keyword
 
 app = Flask(__name__)
 
@@ -10,7 +11,12 @@ airlines = [{"name":"IndiGo", "logo":"https://www.liblogo.com/img-logo/in7716i6b
             {"name":"Air India","logo":"https://tse1.mm.bing.net/th/id/OIP.VF8rQObGF-vhG_BQLL0zmgHaEo?rs=1&pid=ImgDetMain"},
             {"name":"SpiceJet", "logo":"https://tse3.mm.bing.net/th/id/OIP.2FAwuoQcqTrxpgdMyQrMmgAAAA?rs=1&pid=ImgDetMain"},
             {"name":"Vistara", "logo":"https://tse4.mm.bing.net/th/id/OIP.1AJghOmsWxb_Z2FklliYgAHaE8?rs=1&pid=ImgDetMain"},
-            {"name":"Go First", "logo":"https://www.odishaage.com/wp-content/uploads/2021/08/GO-FIRST.png"}, {"name":"Akasa Air", "logo":"https://tse1.mm.bing.net/th/id/OIP.racldovE1XyYS-S_4FP3QQHaBQ?rs=1&pid=ImgDetMain"}]
+            {"name":"Go First", "logo":"https://www.odishaage.com/wp-content/uploads/2021/08/GO-FIRST.png"},
+            {"name":"Akasa Air", "logo":"https://tse1.mm.bing.net/th/id/OIP.racldovE1XyYS-S_4FP3QQHaBQ?rs=1&pid=ImgDetMain"},
+            {"name":"Lufthansa ", "logo":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTv9X0JBcHTs4fb6SI2MGsl0Jn1bMycfs49nQ&s"},
+            {"name":"British Airways", "logo":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQv3If5jF-HB-7Ky2l99w0ZsGovIeFREY98Wg&s"},
+            {"name":"Etihad Airways", "logo":"https://images.seeklogo.com/logo-png/17/2/etihad-airways-logo-png_seeklogo-177330.png"}
+            ]
 seat_types = ["Economy", "Premium Economy", "Business", "First Class"]
 cabin_classes = ["Standard", "Premium", "Deluxe", "Executive"]
 flight_types = ["Non-Stop", "One-Stop", "Two-Stop"]
@@ -23,7 +29,22 @@ entertainment_options = ["In-Flight Entertainment", "Streaming via App", "None"]
 aircraft_types = ["Airbus A320", "Boeing 737", "Airbus A321", "Boeing 787"]
 fare_classes = ["Y", "B", "M", "H", "Q", "K"]
 gate_numbers = [f"A{n}" for n in range(1, 21)]
-layover_cities = ["Hyderabad", "Ahmedabad", "Chennai", "Bengaluru", "Pune", "Kolkata"]
+
+def get_random_international_route_with_layover():
+    layover_cities = ["Hyderabad", "Ahmedabad", "Chennai", "Bengaluru", "Pune", "Kolkata"]
+    from_cities = ["Delhi", "dubai", "london", "new york", "germany", "canada", "singapore", "france", "switzerland", "australia"]
+    to_cities = ["Mumbai", "Bengaluru", "Chennai", "Kolkata", "Hyderabad", "Pune", "Ahmedabad", "Jaipur", "Goa", "Cochin"]
+
+    valid_from = [city for city in from_cities if city not in layover_cities]
+    valid_to = [city for city in to_cities if city not in layover_cities]
+
+    from_city = random.choice(valid_from)
+    to_city = random.choice([city for city in valid_to if city != from_city])
+
+    possible_layovers = [city for city in layover_cities if city != from_city and city != to_city]
+    layover = random.choice(possible_layovers) if possible_layovers and random.choice([True, False]) else None
+    return from_city, to_city, layover
+
 
 def random_time():
     start = datetime.strptime('00:00', '%H:%M')
@@ -32,14 +53,13 @@ def random_time():
     return (start + timedelta(minutes=rand_minutes)).strftime('%H:%M')
 
 def generate_flight(i):
-    layover_count = random.choice([0, 1, 2])
-    layovers = random.sample(layover_cities, layover_count)
+    from_city, to_city, layover = get_random_international_route_with_layover()
     return {
         "flightId": f"FLIGHT-{4103 + i}",
         "flightNumber": f"{random.choice(airlines)['name'][:2].upper()}-{random.randint(100, 9999)}",
         "airline": random.choice(airlines),
-        "from": "Delhi",
-        "to": "Mumbai",
+        "from": from_city,
+        "to": to_city,
         "departureTime": random_time(),
         "arrivalTime": random_time(),
         "duration": f"{random.randint(1, 5)}h {random.randint(0, 59)}m",
@@ -60,8 +80,8 @@ def generate_flight(i):
         "terminal": f"T{random.randint(1, 3)}",
         "boardingTime": random_time(),
         "checkInCounter": f"C{random.randint(1, 20)}",
-        "layovers": layovers,
-        "totalStops": len(layovers),
+        "layovers": [layover],
+        "totalStops": 1,
         "onTimePerformance": f"{random.randint(80, 99)}%",
         "seatPitch": f"{random.randint(28, 34)} inches",
         "seatWidth": f"{random.randint(17, 21)} inches",
@@ -84,7 +104,7 @@ def generate_flight(i):
 
 @app.route('/vendor1/api/flights', methods=['GET'])
 def get_flights():
-    flights = [generate_flight(i) for i in range(50)]
+    flights = [generate_flight(i) for i in range(2000)]
     return jsonify(flights)
 
 @app.route('/vendor1/api/flights/paginated', methods=['GET'])
@@ -105,6 +125,47 @@ def get_flights_paginated():
         "totalFlights": len(all_flights),
         "flights": all_flights[start:end]
     })
+
+
+@app.route('/vendor1/api/flights/search', methods=['GET'])
+def search_flights():
+    source = request.args.get('from')
+    destination = request.args.get('to')
+    page = int(request.args.get('page', 1))
+    per_page = int(request.args.get('size', 10))
+
+    if not source or not destination:
+        return jsonify({"error": "Missing 'from' or 'to' parameter"}), 400
+
+    flights = get_flights_from_mongo(source, destination, 'Amadeus')
+    sorted_flights = sorted(flights, key=lambda x: x['price'])
+    start = (page - 1) * per_page
+    end = start + per_page
+    paginated_flights = sorted_flights[start:end]
+
+    return jsonify({
+        "page": page,
+        "perPage": per_page,
+        "totalFlights": len(sorted_flights),
+        "flights": paginated_flights
+    })
+
+@app.route('/vendor1/api/bookings', methods=['GET'])
+def get_bookings_by_route():
+    userid = request.args.get('userId')
+    if not userid:
+        return jsonify({"error": "Missing userid parameter"}), 400
+    return jsonify(get_all_bookings(userid, 'Amadeus'))
+
+
+@app.route('/vendor1/api/cities/search', methods=['GET'])
+def search_cities():
+    keyword = request.args.get('keyword')
+    if not keyword or len(keyword) <= 2:
+        return jsonify({"error": "Parameter 'keyword' is required and must be at least 3 characters long."}), 400
+    from_param = request.args.get('from')
+    cities = search_cities_by_keyword(keyword, from_param)
+    return jsonify({"cities": cities})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

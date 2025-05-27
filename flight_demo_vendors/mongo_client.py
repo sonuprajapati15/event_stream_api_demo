@@ -1,0 +1,54 @@
+# mongo_client.py
+from pymongo import MongoClient
+import re
+from bson import ObjectId
+
+client = MongoClient("mongodb://localhost:27019/")
+db = client["flights"]
+bookings_collection = db["bookings"]
+sabre_collection = db["sabre"]
+amadeus_collection = db["amadeus"]
+
+
+def convert_object_id(doc):
+    for key, value in doc.items():
+        if isinstance(value, ObjectId):
+            doc[key] = str(value)
+    return doc
+
+
+def get_all_bookings(user_id, vendor_name):
+    result =  list(bookings_collection.find({}, {"user_d": user_id, "vendor_name": vendor_name}))
+    return [convert_object_id(doc) for doc in result]
+
+
+def get_flights_from_mongo(source, destination, vendor_name, sort_by="price"):
+    if vendor_name == "Sabre":
+        result =  list(sabre_collection.find({"from": source, "to": destination}).sort(sort_by, 1))
+        return [convert_object_id(doc) for doc in result]
+    if vendor_name == "Amadeus":
+        result =  list(amadeus_collection.find({"from": source, "to": destination}).sort(sort_by, 1))
+        return [convert_object_id(doc) for doc in result]
+    return list()
+
+
+def search_cities_by_keyword(keyword, from_param=None):
+    if not keyword or len(keyword) <= 2:
+        return []
+
+    regex = re.compile(re.escape(keyword), re.IGNORECASE)
+    if from_param:
+        # Return only 'from' cities matching the keyword
+        from_param = re.compile(re.escape(from_param), re.IGNORECASE)
+        destinations = set()
+        destinations.update(sabre_collection.distinct("to", {"from": from_param, "to": regex}))
+        destinations.update(amadeus_collection.distinct("to", {"from": from_param, "to": regex}))
+        return sorted(destinations)
+    else:
+        # Combine 'from' and 'to' cities matching the keyword
+        sources = sabre_collection.distinct("from", {"from": regex})
+        destinations = sabre_collection.distinct("to", {"to": regex})
+        sources += amadeus_collection.distinct("from", {"from": regex})
+        destinations += amadeus_collection.distinct("to", {"to": regex})
+        all_cities = set(sources + destinations)
+        return sorted(all_cities)
