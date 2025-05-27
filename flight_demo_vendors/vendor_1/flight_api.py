@@ -3,7 +3,7 @@ import random
 import json
 from time import sleep
 from datetime import datetime, timedelta
-from flight_demo_vendors.mongo_client import get_all_bookings, get_flights_from_mongo, search_cities_by_keyword
+from flight_demo_vendors.mongo_client import get_all_bookings, get_flights_from_mongo, search_cities_by_keyword, bookings_collection
 
 app = Flask(__name__)
 
@@ -166,6 +166,27 @@ def search_cities():
     from_param = request.args.get('from')
     cities = search_cities_by_keyword(keyword, from_param)
     return jsonify({"cities": cities})
+
+
+@app.route('/vendor1/api/bookings', methods=['POST'])
+def save_booking():
+    user_id = request.args.get('userId')
+    if not user_id or not isinstance(user_id, str) or not user_id.strip():
+        return jsonify({"error": "Missing or invalid userId parameter"}), 400
+
+    booking = request.get_json()
+    if not booking or not isinstance(booking, dict):
+        return jsonify({"error": "Invalid booking data"}), 400
+
+    booking['userId'] = user_id
+
+    try:
+        result = bookings_collection.insert_one(booking)
+        booking['_id'] = str(result.inserted_id)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    return jsonify({"message": "Booking saved successfully", "booking": booking}), 201
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
