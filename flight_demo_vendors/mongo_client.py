@@ -17,8 +17,8 @@ def convert_object_id(doc):
     return doc
 
 
-def get_all_bookings(user_id, vendor_name):
-    result =  list(bookings_collection.find({}, {"user_d": user_id, "vendor_name": vendor_name}))
+def get_all_bookings(user_id, vendor_name='Sabre'):
+    result =  list(bookings_collection.find({}, {"user_d": user_id}).sort("date_time", -1))
     return [convert_object_id(doc) for doc in result]
 
 
