@@ -23,6 +23,8 @@ def get_all_bookings(user_id, vendor_name='Sabre'):
 
 
 def get_flights_from_mongo(source, destination, vendor_name, sort_by="price"):
+    source = re.compile(re.escape(source), re.IGNORECASE)
+    destination = re.compile(re.escape(destination), re.IGNORECASE)
     if vendor_name == "Sabre":
         result =  list(sabre_collection.find({"from": source, "to": destination}).sort(sort_by, 1))
         return [convert_object_id(doc) for doc in result]
@@ -37,12 +39,12 @@ def search_cities_by_keyword(keyword, from_param=None):
         return []
 
     regex = re.compile(re.escape(keyword), re.IGNORECASE)
-    if from_param:
+    if from_param and from_param != 'null':
         # Return only 'from' cities matching the keyword
-        from_param = re.compile(re.escape(from_param), re.IGNORECASE)
+        from_param_regex = re.compile(re.escape(from_param), re.IGNORECASE)
         destinations = set()
-        destinations.update(sabre_collection.distinct("to", {"from": from_param, "to": regex}))
-        destinations.update(amadeus_collection.distinct("to", {"from": from_param, "to": regex}))
+        destinations.update(sabre_collection.distinct("to", {"from": from_param_regex, "to": regex}))
+        destinations.update(amadeus_collection.distinct("to", {"from": from_param_regex, "to": regex}))
         return sorted(destinations)
     else:
         # Combine 'from' and 'to' cities matching the keyword
