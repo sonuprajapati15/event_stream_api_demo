@@ -17,19 +17,19 @@ def convert_object_id(doc):
     return doc
 
 
-def get_all_bookings(user_id, vendor_name='Sabre'):
+def get_all_bookings(user_id):
     result =  list(bookings_collection.find({}, {"user_d": user_id}).sort("date_time", -1))
     return [convert_object_id(doc) for doc in result]
 
 
-def get_flights_from_mongo(source, destination, vendor_name, sort_by="price"):
+def get_flights_from_mongo(source, destination, start, end, vendor_name, sort_by="price", flight_sort_by="flightNumber"):
     source = re.compile(re.escape(source), re.IGNORECASE)
     destination = re.compile(re.escape(destination), re.IGNORECASE)
     if vendor_name == "Sabre":
-        result =  list(sabre_collection.find({"from": source, "to": destination}).sort(sort_by, 1))
+        result = list(sabre_collection.find({"from": source, "to": destination}).sort([(flight_sort_by, 1),(sort_by, 1)]))
         return [convert_object_id(doc) for doc in result]
     if vendor_name == "Amadeus":
-        result =  list(amadeus_collection.find({"from": source, "to": destination}).sort(sort_by, 1))
+        result =  list(amadeus_collection.find({"from": source, "to": destination}).sort([(flight_sort_by, 1),(sort_by, 1)]).skip(start).limit(end))
         return [convert_object_id(doc) for doc in result]
     return list()
 
@@ -39,8 +39,7 @@ def search_cities_by_keyword(keyword, from_param=None):
         return []
 
     regex = re.compile(re.escape(keyword), re.IGNORECASE)
-    if from_param and from_param != 'null':
-        # Return only 'from' cities matching the keyword
+    if from_param and from_param != 'null' and len(from_param) > 2:
         from_param_regex = re.compile(re.escape(from_param), re.IGNORECASE)
         destinations = set()
         destinations.update(sabre_collection.distinct("to", {"from": from_param_regex, "to": regex}))
