@@ -13,7 +13,7 @@ from utils.fare_utils import forRecommeded, forValueOne, forExpensiveOnbe
 def generate_flight(i):
     from_city, to_city, layover = get_random_international_route_with_layover()
     return {
-        "flightId": f"FLIGHT-{1000 + i}",
+        "flightId": f"FLIGHT-{3000 + i}",
         "flightNumber": f"{random.choice(airlines)['name'][:2].upper()}-{random.randint(100, 1000)}",
         "airline": random.choice(airlines),
         "from": from_city,
@@ -85,7 +85,11 @@ def get_flights_from_file(page, per_page):
     })
 
 def get_flights_from_db(source, destination, start=0, end=30):
-    return get_flights_from_mongo(source, destination, start, end, 'Amadeus')
+    flights =  get_flights_from_mongo(source, destination, start, end, 'Amadeus')
+    for flight in flights:
+        for cat in flight['fareCategories']:
+            cat['fareOptions'] = sorted(cat['fareOptions'], key=lambda x: x.get('total_price', 0))
+    return flights
 
 def get_fare_categories(price):
     return [

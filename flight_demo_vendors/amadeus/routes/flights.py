@@ -1,3 +1,5 @@
+from time import sleep
+
 from flask import Blueprint, jsonify, request
 from services.flight_service import (
     generate_flight, group_by_flight, get_flights_from_file, get_flights_from_db, get_fare_categories
@@ -23,10 +25,11 @@ def get_flights_paginated():
 
 @flights_bp.route('/search', methods=['GET'])
 def search_flights():
+    sleep(1)
     source = request.args.get('from')
     destination = request.args.get('to')
     page = int(request.args.get('page', 1))
-    per_page = min(int(request.args.get('size', 30)), 200)
+    per_page = min(int(request.args.get('size', 20)), 200)
     start = (page - 1) * per_page
     end = start + per_page
     if not source or not destination:
