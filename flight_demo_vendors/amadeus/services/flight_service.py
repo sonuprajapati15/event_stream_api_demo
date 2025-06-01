@@ -102,7 +102,7 @@ def get_flights_from_db_by_id(flightId, fareCategoryName, fareCategoryId):
     if (
             flightId == 'undefined' or len(flightId) < 5 or
             fareCategoryName == 'undefined' or len(fareCategoryName) < 5 or
-            fareCategoryId == 'undefined' or len(fareCategoryId) < 0
+            fareCategoryId == 'undefined'
     ):
         return jsonify({"error": "Invalid flightId"}), 400
     flight = amadeus_collection.find_one({'flightId': flightId})
