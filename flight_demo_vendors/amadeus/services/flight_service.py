@@ -4,11 +4,14 @@ from datetime import datetime, timedelta
 from flask import jsonify
 from vendors.mongo_client import get_flights_from_mongo
 from utils.random_utils import (
-    get_random_international_route_with_layover, random_time, airlines, seat_types, cabin_classes, 
-    flight_types, baggage_options, cancellation_policies, change_policies, meal_options, 
+    get_random_international_route_with_layover, random_time, airlines, seat_types, cabin_classes,
+    flight_types, baggage_options, cancellation_policies, change_policies, meal_options,
     wifi_availability, entertainment_options, aircraft_types, fare_classes, gate_numbers
 )
 from utils.fare_utils import forRecommeded, forValueOne, forExpensiveOnbe
+
+from flight_demo_vendors.amadeus.vendors.mongo_client import amadeus_collection, convert_object_id
+
 
 def generate_flight(i):
     from_city, to_city, layover = get_random_international_route_with_layover()
@@ -60,12 +63,14 @@ def generate_flight(i):
         "vendor_logo": 'https://tse3.mm.bing.net/th/id/OIP.zMXaa5KC0DWwQVo4FxgragHaBL?rs=1&pid=ImgDetMain'
     }
 
+
 def group_by_flight(flights, group_by='flightNumber'):
     from collections import defaultdict
     grouped = defaultdict(list)
     for flight in flights:
         grouped[flight[group_by]].append(flight)
     return list(grouped.values())
+
 
 def get_flights_from_file(page, per_page):
     from time import sleep
@@ -84,12 +89,36 @@ def get_flights_from_file(page, per_page):
         "flights": all_flights[start:end]
     })
 
+
 def get_flights_from_db(source, destination, start=0, end=30):
-    flights =  get_flights_from_mongo(source, destination, start, end, 'Amadeus')
+    flights = get_flights_from_mongo(source, destination, start, end, 'Amadeus')
     for flight in flights:
         for cat in flight['fareCategories']:
             cat['fareOptions'] = sorted(cat['fareOptions'], key=lambda x: x.get('total_price', 0))
     return flights
+
+
+def get_flights_from_db_by_id(flightId, fareCategoryName, fareCategoryId):
+    if (
+            flightId == 'undefined' or len(flightId) < 5 or
+            fareCategoryName == 'undefined' or len(fareCategoryName) < 5 or
+            fareCategoryId == 'undefined' or len(fareCategoryId) < 0
+    ):
+        return jsonify({"error": "Invalid flightId"}), 400
+    flight = amadeus_collection.find_one({'flightId': flightId})
+    if not flight:
+        return jsonify({"error": "Flight not found"}), 404
+    try:
+        for fareCategory in flight['fareCategories']:
+            if fareCategory['fareType'] == fareCategoryName:
+                flight['chooseFare'] = fareCategory['fareOptions'][int(fareCategoryId)]
+                flight['image'] = fareCategory['image']
+                break
+    except (KeyError, IndexError, ValueError):
+        return jsonify({"error": "Invalid fare category or ID"}), 400
+    flight['fareCategories'] = None
+    return convert_object_id(flight)
+
 
 def get_fare_categories(price):
     return [

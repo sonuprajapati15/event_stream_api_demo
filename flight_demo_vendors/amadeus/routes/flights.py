@@ -2,7 +2,7 @@ from time import sleep
 
 from flask import Blueprint, jsonify, request
 from services.flight_service import (
-    generate_flight, group_by_flight, get_flights_from_file, get_flights_from_db, get_fare_categories
+    generate_flight, group_by_flight, get_flights_from_file, get_flights_from_db, get_fare_categories, get_flights_from_db_by_id
 )
 from vendors.mongo_client import amadeus_collection, convert_object_id
 import random
@@ -35,9 +35,16 @@ def search_flights():
     if not source or not destination:
         return jsonify({"error": "Missing 'from' or 'to' parameter"}), 400
     flights = get_flights_from_db(source, destination, start*end, end)
-    return jsonify({
+    return (jsonify({
         "page": page,
         "perPage": per_page,
         "current_count": len(flights),
         "flights": flights
-    })
+    }))
+
+@flights_bp.route('/search/byId', methods=['GET'])
+def search_flights_by_id():
+    flightId = request.args.get('flightId')
+    fareType = request.args.get('fareType')
+    fareId = request.args.get('fareId')
+    return get_flights_from_db_by_id(flightId, fareType, fareId)

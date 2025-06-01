@@ -10,6 +10,9 @@ from utils.random_utils import (
 )
 from utils.fare_utils import forRecommeded, forValueOne, forExpensiveOnbe
 
+from flight_demo_vendors.amadeus.vendors.mongo_client import sabre_collection, convert_object_id
+
+
 def generate_flight(i):
     from_city, to_city, layover = get_random_international_route_with_layover()
     return {
@@ -90,6 +93,27 @@ def get_flights_from_db(source, destination, start=0, end=30):
         for cat in flight['fareCategories']:
             cat['fareOptions'] = sorted(cat['fareOptions'], key=lambda x: x.get('total_price', 0))
     return flights
+
+def get_flights_from_db_by_id(flightId, fareCategoryName, fareCategoryId):
+    if (
+            flightId == 'undefined' or len(flightId) < 5 or
+            fareCategoryName == 'undefined' or len(fareCategoryName) < 5 or
+            fareCategoryId == 'undefined' or len(fareCategoryId) < 0
+    ):
+        return jsonify({"error": "Invalid flightId"}), 400
+    flight = sabre_collection.find_one({'flightId': flightId})
+    if not flight:
+        return jsonify({"error": "Flight not found"}), 404
+    try:
+        for fareCategory in flight['fareCategories']:
+            if fareCategory['fareType'] == fareCategoryName:
+                flight['chooseFare'] = fareCategory['fareOptions'][int(fareCategoryId)]
+                flight['image'] = fareCategory['image']
+                break
+    except (KeyError, IndexError, ValueError):
+        return jsonify({"error": "Invalid fare category or ID"}), 400
+    flight['fareCategories'] = None
+    return convert_object_id(flight)
 
 def get_fare_categories(price):
     return [
