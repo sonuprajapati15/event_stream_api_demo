@@ -12,15 +12,15 @@ from utils.fare_utils import forRecommeded, forValueOne, forExpensiveOnbe
 
 from flight_demo_vendors.amadeus.vendors.mongo_client import sabre_collection, convert_object_id
 
-cityImages = ['https://img.freepik.com/free-photo/big-city_1127-3102.jpg?semt=ais_hybrid&w=740',
-           'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWT-7DycWq2GLmonKXV2v4VAvdpomwMKiXZA&s',
-           'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSNEhjJyN1eHdHKBOQlq8-M7JPizJ2uGFYKU1ttNm0j5iAPME9j-ksYajv1-zF2ox8eauQ&usqp=CAU',
-           'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQco5Oky_Kg1I3k-x2j4mGpXgh_TNl9TTKSDA&s',
-           'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfeQEfsuNFN30EObu3WOA9cSl6Qo6FBOGz8A&s',
-           'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfeQEfsuNFN30EObu3WOA9cSl6Qo6FBOGz8A&s',
-           'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQF2WD9tYHASBteiggXecBLb6MxizagBu4SQ&s'
-           'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZUIWKrXEuWwnVJkKKG2hQyu7Aja-vBqq__g&s']
-
+cityImages = ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSn1h0du7X6cxnkLHYCmxGEYRIWvWPGqCqz6JfzD_xZ0hdi7_ui493o81U4MKVt5BfJ-M0&usqp=CAU',
+              'https://img.etimg.com/thumb/msid-116567353,width-480,height-360,imgsize-2457160,resizemode-75/hill-stations-for-snow-near-delhi.jpg',
+              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrl1qpvRFgajjpjE-sZ-8lV-sSmPuzq-eTrCFeiQBnrG6FjOaTqTbZwtVLCUgVxW99DYI&usqp=CAU',
+              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzoDRR1PH9z_zbX5Ty64reEk1ulS2OtZfxNAxi0NlEtGOmIWOkd4QuRoA0NxD3jypaW6w&usqp=CAU'
+              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0P854_yeZEn-NP0HTZKBdSx55CkbZHqfGTMlNWbl0DU1tUbv1xRN3gmuov0H5umf1vP8&usqp=CAU',
+              'https://www.tourism-of-india.com/blog/wp-content/uploads/2018/06/Pelling-Sikkim.jpg',
+              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS97BgOXzc2JikXg9s9V0SrtJMhogl0YShYRWJe1l0IXkUTYFf1hD-1el_DUD9OMy6Xjic&usqp=CAU',
+              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8uK8UaDGEAn_8VrsGnV1smKjUFjCEgLm4xg&s'
+              ]
 
 bgImage = ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpbcOB0Y8MuRIr2QUAc-knC_VZWYn6Jt-V_w&s',
               'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQF2WD9tYHASBteiggXecBLb6MxizagBu4SQ&s',
