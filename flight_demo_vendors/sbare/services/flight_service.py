@@ -24,12 +24,12 @@ cityImages = ['https://img.freepik.com/free-photo/big-city_1127-3102.jpg?semt=ai
 
 bgImage = ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpbcOB0Y8MuRIr2QUAc-knC_VZWYn6Jt-V_w&s',
               'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQF2WD9tYHASBteiggXecBLb6MxizagBu4SQ&s',
-              'https://media.istockphoto.com/id/539018660/photo/taj-mahal-hotel-and-gateway-of-india.jpg?s=612x612&w=0&k=20&c=L1LJVrYMS8kj2rJKlQMcUR88vYoAZeWbYIGkcTo6QV0='
               'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ40FtCvdfhsg9gL5g0vWJobEODd43pJqs9Dw&s',
               'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJJaqQiZIWe0GW3snZP48XVcqlv4490yugbg&s'
               'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQN14T7Zr2DNPo7yqT0jR4fI6FUuticTyeqCw&s',
               'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkY442bF8NRNPhzk1ihpOtTbQnoi4U5GS-DA&s',
-              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwb9sN8F1MbvnVFpYJ_kq0t2esLW5XXTdU3g&s'
+              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwb9sN8F1MbvnVFpYJ_kq0t2esLW5XXTdU3g&s',
+              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQMw7uDKjS8qaabv97K3dEMDECi9rBai-_nQw&s'
               ]
 
 
