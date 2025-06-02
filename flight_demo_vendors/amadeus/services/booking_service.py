@@ -1,3 +1,4 @@
+import random
 from datetime import datetime, timedelta
 from random import choice
 
@@ -27,7 +28,13 @@ cityImages = ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpbcOB0Y8Mu
               ]
 
 def get_all_bookings_service(userid):
-    return get_all_bookings(userid)
+    bookingStatusMap =  get_all_bookings(userid)
+    for key in bookingStatusMap:
+        for booking in bookingStatusMap.get(key):
+            if isinstance(booking, dict):
+                booking['cityImage'] = choice(bgImage) if random.randint(1, 2) == 1 else choice(cityImages)
+                booking['bgImage'] = choice(bgImage) if random.randint(1, 2) == 1 else choice(cityImages)
+    return bookingStatusMap
 
 
 def save_booking_service(request):
