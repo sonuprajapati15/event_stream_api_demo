@@ -18,8 +18,15 @@ def convert_object_id(doc):
 
 
 def get_all_bookings(user_id):
-    result =  list(bookings_collection.find({}, {"user_d": user_id}).sort("date_time", -1))
-    return [convert_object_id(doc) for doc in result]
+    upcoming = list(bookings_collection.find({"userId": user_id, 'status': 'UPCOMING'}).sort("travel_date", 1))
+    complete = list(bookings_collection.find({"userId": user_id, 'status': 'COMPLETED'}).sort("update_time", -1))
+    cancelled = list(bookings_collection.find({"userId": user_id, 'status': 'CANCELLED'}).sort("update_time", -1))
+    result = {
+        "upcoming": [convert_object_id(doc) for doc in upcoming],
+        "complete": [convert_object_id(doc) for doc in complete],
+        "cancelled": [convert_object_id(doc) for doc in cancelled]
+    }
+    return result
 
 
 def get_flights_from_mongo(source, destination, start, end, vendor_name, sort_by="price", flight_sort_by="flightNumber"):

@@ -12,6 +12,26 @@ from utils.fare_utils import forRecommeded, forValueOne, forExpensiveOnbe
 
 from flight_demo_vendors.amadeus.vendors.mongo_client import sabre_collection, convert_object_id
 
+cityImages = ['https://img.freepik.com/free-photo/big-city_1127-3102.jpg?semt=ais_hybrid&w=740',
+           'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWT-7DycWq2GLmonKXV2v4VAvdpomwMKiXZA&s',
+           'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSNEhjJyN1eHdHKBOQlq8-M7JPizJ2uGFYKU1ttNm0j5iAPME9j-ksYajv1-zF2ox8eauQ&usqp=CAU',
+           'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQco5Oky_Kg1I3k-x2j4mGpXgh_TNl9TTKSDA&s',
+           'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfeQEfsuNFN30EObu3WOA9cSl6Qo6FBOGz8A&s',
+           'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfeQEfsuNFN30EObu3WOA9cSl6Qo6FBOGz8A&s',
+           'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQF2WD9tYHASBteiggXecBLb6MxizagBu4SQ&s'
+           'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZUIWKrXEuWwnVJkKKG2hQyu7Aja-vBqq__g&s']
+
+
+bgImage = ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpbcOB0Y8MuRIr2QUAc-knC_VZWYn6Jt-V_w&s',
+              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQF2WD9tYHASBteiggXecBLb6MxizagBu4SQ&s',
+              'https://media.istockphoto.com/id/539018660/photo/taj-mahal-hotel-and-gateway-of-india.jpg?s=612x612&w=0&k=20&c=L1LJVrYMS8kj2rJKlQMcUR88vYoAZeWbYIGkcTo6QV0='
+              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ40FtCvdfhsg9gL5g0vWJobEODd43pJqs9Dw&s',
+              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJJaqQiZIWe0GW3snZP48XVcqlv4490yugbg&s'
+              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQN14T7Zr2DNPo7yqT0jR4fI6FUuticTyeqCw&s',
+              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkY442bF8NRNPhzk1ihpOtTbQnoi4U5GS-DA&s',
+              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwb9sN8F1MbvnVFpYJ_kq0t2esLW5XXTdU3g&s'
+              ]
+
 
 def generate_flight(i):
     from_city, to_city, layover = get_random_international_route_with_layover()
@@ -113,6 +133,8 @@ def get_flights_from_db_by_id(flightId, fareCategoryName, fareCategoryId):
     except (KeyError, IndexError, ValueError):
         return jsonify({"error": "Invalid fare category or ID"}), 400
     flight['fareCategories'] = None
+    flight['bgImage'] = random.choice(bgImage)
+    flight['cityImage'] = random.choice(cityImages)
     return convert_object_id(flight)
 
 def get_fare_categories(price):
