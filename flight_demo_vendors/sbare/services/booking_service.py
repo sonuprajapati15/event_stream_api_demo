@@ -16,10 +16,10 @@ def save_booking_service(request):
     flight_data = get_flights_from_db_by_id(booking.get('flightId'), booking.get('fareType'), booking.get('fareId'))
     if isinstance(flight_data, dict):
         booking.update(flight_data)
-    booking["date_time"] = datetime.now()
     booking.pop('_id', None)
-    booking["update_time"] = datetime.now()
-    booking["travel_date"] = datetime.now() + timedelta(days=30)
+    booking["date_time"] = datetime.now().isoformat()
+    booking["update_time"] = datetime.now().isoformat()
+    booking["travel_date"] = (datetime.now() + timedelta(days=32)).isoformat()
 
     if booking.get("lobName") is None:
         booking["lobName"] = "FLIGHT"

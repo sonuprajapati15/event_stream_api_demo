@@ -6,6 +6,10 @@ from vendors.mongo_client import get_all_bookings, bookings_collection, convert_
 from flask import jsonify
 from flight_demo_vendors.amadeus.services.flight_service import get_flights_from_db_by_id
 
+import requests
+import json
+
+token = 'vUxFIL-2g68TateoCIJryqDSJ9oW9KUfFrSQdww6ziM'
 
 bgImage = ['https://img.freepik.com/free-photo/big-city_1127-3102.jpg?semt=ais_hybrid&w=740',
            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWT-7DycWq2GLmonKXV2v4VAvdpomwMKiXZA&s',
@@ -32,8 +36,10 @@ def get_all_bookings_service(userid):
     for key in bookingStatusMap:
         for booking in bookingStatusMap.get(key):
             if isinstance(booking, dict):
-                booking['cityImage'] = choice(bgImage) if random.randint(1, 2) == 1 else choice(cityImages)
-                booking['bgImage'] = choice(bgImage) if random.randint(1, 2) == 1 else choice(cityImages)
+                if not booking['cityImage']:
+                    cityImage, bgImage = getBookingCityImage(booking.get('to'))
+                    booking['cityImage'] = cityImage
+                    booking['bgImage'] = bgImage
     return bookingStatusMap
 
 
@@ -45,10 +51,14 @@ def save_booking_service(request):
     flight_data = get_flights_from_db_by_id(booking.get('flightId'), booking.get('fareType'), booking.get('fareId'))
     if isinstance(flight_data, dict):
         booking.update(flight_data)
-    booking["date_time"] = datetime.now()
     booking.pop('_id', None)
-    booking["update_time"] = datetime.now()
-    booking["travel_date"] = datetime.now() + timedelta(days=30)
+    booking["date_time"] = datetime.now().isoformat()
+    booking["update_time"] = datetime.now().isoformat()
+    booking["travel_date"] = (datetime.now() + timedelta(days=32)).isoformat()
+    cityImage, bgImage = getBookingCityImage(booking.get('to'))
+    booking['cityImage'] = cityImage
+    booking['bgImage'] = bgImage
+
 
     if booking.get("lobName") is None:
         booking["lobName"] = "FLIGHT"
@@ -67,8 +77,19 @@ def getBookingByTicketId(ticketId):
     booking = bookings_collection.find_one({"ticketNo": ticketId})
     if booking:
         booking = convert_object_id(booking)
-        booking['cityImage'] = choice(cityImages)
-        booking['bgImage'] = choice(bgImage)
+        cityImage, bgImage = getBookingCityImage(booking.get('to'))
+        booking['cityImage'] = cityImage
+        booking['bgImage'] = bgImage
         return booking
     else:
         return {"error": "Booking not found"}
+
+
+def getBookingCityImage(place):
+    res = requests.get(f"https://api.unsplash.com/search/photos?query={place}&client_id={token}")
+    print('calling api for city image', res.status_code, res.text)
+    results = json.loads(res.text).get('results', [])
+    if not results:
+        return choice(cityImages), choice(bgImage)
+    idx = random.randint(0, len(results) - 1)
+    return results[idx]['urls']['regular'], results[idx]['urls']['full'] if results else (None, None)

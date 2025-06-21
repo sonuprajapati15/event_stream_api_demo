@@ -11,6 +11,9 @@ from utils.random_utils import (
 from utils.fare_utils import forRecommeded, forValueOne, forExpensiveOnbe
 
 from flight_demo_vendors.amadeus.vendors.mongo_client import sabre_collection, convert_object_id
+import requests
+token = 'vUxFIL-2g68TateoCIJryqDSJ9oW9KUfFrSQdww6ziM'
+
 
 cityImages = ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSn1h0du7X6cxnkLHYCmxGEYRIWvWPGqCqz6JfzD_xZ0hdi7_ui493o81U4MKVt5BfJ-M0&usqp=CAU',
               'https://img.etimg.com/thumb/msid-116567353,width-480,height-360,imgsize-2457160,resizemode-75/hill-stations-for-snow-near-delhi.jpg',
@@ -133,8 +136,9 @@ def get_flights_from_db_by_id(flightId, fareCategoryName, fareCategoryId):
     except (KeyError, IndexError, ValueError):
         return jsonify({"error": "Invalid fare category or ID"}), 400
     flight['fareCategories'] = None
-    flight['bgImage'] = random.choice(bgImage)
-    flight['cityImage'] = random.choice(cityImages)
+    cityImage, bgImage = getBookingCityImage(flight.get('to'))
+    flight['bgImage'] = bgImage
+    flight['cityImage'] = cityImage
     return convert_object_id(flight)
 
 def get_fare_categories(price):
@@ -143,3 +147,12 @@ def get_fare_categories(price):
         forValueOne(price, {}),
         forExpensiveOnbe(price, {})
     ]
+
+def getBookingCityImage(place):
+    res = requests.get(f"https://api.unsplash.com/search/photos?query={place}&client_id={token}")
+    print('calling api for city image', res.status_code, res.text)
+    results = json.loads(res.text).get('results', [])
+    if not results:
+        return random.choice(cityImages), random.choice(bgImage)
+    idx = random.randint(0, len(results) - 1)
+    return results[idx]['urls']['regular'], results[idx]['urls']['full'] if results else (None, None)

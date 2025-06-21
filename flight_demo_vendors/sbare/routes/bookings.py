@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from services.booking_service import get_all_bookings_service, save_booking_service
+from flight_demo_vendors.sbare.services.booking_service import get_all_bookings_service, save_booking_service
 
 bookings_bp = Blueprint('bookings', __name__)
 

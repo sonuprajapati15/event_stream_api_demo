@@ -19,7 +19,7 @@ def convert_object_id(doc):
 
 def get_all_bookings(user_id):
     upcoming = list(bookings_collection.find({"userId": user_id, 'status': 'UPCOMING'}).sort("travel_date", 1))
-    complete = list(bookings_collection.find({"userId": user_id, 'status': 'COMPLETED'}).sort("update_time", -1))
+    complete = list(bookings_collection.find({"userId": user_id, 'status': 'COMPLETED'}).sort("travel_date", -1))
     cancelled = list(bookings_collection.find({"userId": user_id, 'status': 'CANCELLED'}).sort("update_time", -1))
     result = {
         "upcoming": [convert_object_id(doc) for doc in upcoming],

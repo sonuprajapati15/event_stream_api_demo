@@ -1,7 +1,7 @@
 from time import sleep
 
 from flask import Blueprint, jsonify, request
-from services.flight_service import (
+from flight_demo_vendors.amadeus.services.flight_service import (
     generate_flight, group_by_flight, get_flights_from_file, get_flights_from_db, get_fare_categories, get_flights_from_db_by_id
 )
 from vendors.mongo_client import amadeus_collection, convert_object_id

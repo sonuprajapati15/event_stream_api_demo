@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from services.city_service import search_cities_by_keyword_service
+from flight_demo_vendors.amadeus.services.city_service import search_cities_by_keyword_service
 
 cities_bp = Blueprint('cities', __name__)
 
